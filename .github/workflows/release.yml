@@ -1,18 +1,47 @@
-name: Create Release (Windows)
+name: Auto Release Main
 on:
-  workflow_dispatch:
-
+  push:
+    branches:
+      - main
 jobs:
-  build:
-
-    runs-on: release-builder
-
+  release:
+    runs-on: ubuntu-latest
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+      upload_url: ${{ steps.release.outputs.upload_url }}
     steps:
-      - uses: actions/checkout@v3
-      - name: Setup .NET
+      - uses: actions/checkout@v2 
+      - uses: google-github-actions/release-please-action@v3
+        id: release
+        with:
+          package-name: wabbajack
+          release-type: simple
+  windows-x86_64:
+    runs-on: windows-latest
+    needs: release
+    if: ${{ needs.release.outputs.release_created }}
+    steps:
+      - uses: actions/checkout@v1
+      - name: Setup
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: 6.0.x
       - name: Build
         run: |
-          ./buildall.bat
+          mkdir release
+          dotnet restore
+          dotnet publish Wabbajack.App.Wpf\Wabbajack.App.Wpf.csproj --runtime win10-x64 --configuration Release /p:Platform=x64 -o .\release\app /p:PublishReadyToRun=true /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true --self-contained /p:DebugType=embedded
+          dotnet publish Wabbajack.Launcher\Wabbajack.Launcher.csproj --runtime win10-x64 --configuration Release /p:Platform=x64 -o .\release\launcher /p:PublishReadyToRun=true /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true --self-contained /p:DebugType=embedded
+          dotnet publish Wabbajack.CLI\Wabbajack.CLI.csproj --runtime win10-x64 --configuration Release /p:Platform=x64 -o .\release\app --self-contained /p:DebugType=embedded
+      - name: Package
+        run: |
+          7z a -tzip -r .\release
+      - uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          asset_name: wabbajack-${{ needs.release.outputs.tag_name }}-windows-x86_64.zip
+          asset_content_type: application/zip
+          asset_path: release.zip
+          upload_url: ${{ needs.release.outputs.upload_url }}
