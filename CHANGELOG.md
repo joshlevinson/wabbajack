@@ -1,3 +1,20 @@
+# Changelog
+
+## 1.0.0 (2022-12-23)
+
+
+### Features
+
+* new release workflow ([f682167](https://github.com/cthulhu-rlyeh/wabbajack/commit/f68216738e51b433c3f79599492eaa0ddef0f8fd))
+* workflow revamp ([7b47e99](https://github.com/cthulhu-rlyeh/wabbajack/commit/7b47e99660a3c776ac010271a0fb057c707d2539))
+* workflow revamp ([9ee107f](https://github.com/cthulhu-rlyeh/wabbajack/commit/9ee107f4419fdfb91965942dbaab773dc46494f9))
+
+
+### Bug Fixes
+
+* CTD when paths are edited ([5cfa111](https://github.com/cthulhu-rlyeh/wabbajack/commit/5cfa111f7c5cf1877a6f88561e2fc252109a71bf))
+* remove admin killswitch ([6b6b9fa](https://github.com/cthulhu-rlyeh/wabbajack/commit/6b6b9fa89ac0f48c9032a23f61db9c5a485a0f2f))
+
 ### Changelog
 
 #### Version - 3.0.5.0 - 12/22/2022
