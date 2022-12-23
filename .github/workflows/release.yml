@@ -37,7 +37,7 @@ jobs:
       - name: Package
         run: |
           cd release
-          7z a -tzip ..\release.zip *.*
+          7z a -tzip ..\release.zip
       - uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
