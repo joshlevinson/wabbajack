@@ -36,7 +36,8 @@ jobs:
           dotnet publish Wabbajack.CLI\Wabbajack.CLI.csproj --runtime win10-x64 --configuration Release /p:Platform=x64 -o .\release\app --self-contained /p:DebugType=embedded
       - name: Package
         run: |
-          7z a -tzip -r .\release
+          cd release
+          7z a -tzip ..\release.zip *.*
       - uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
