@@ -42,11 +42,11 @@ namespace Wabbajack
                 var messageBox = MessageBox.Show("Don't run Wabbajack as Admin!", "Error", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
                 if (messageBox == MessageBoxResult.OK)
                 {
-                    Environment.Exit(1);
+                    //Environment.Exit(1); // No thanks.
                 }
                 else
                 {
-                    Environment.Exit(1);
+                    //Environment.Exit(1); // No thanks.
                 }
             }
 
