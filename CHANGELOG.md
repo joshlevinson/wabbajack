@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.2](https://github.com/cthulhu-rlyeh/wabbajack/compare/v1.0.1...v1.0.2) (2022-12-23)
+
+
+### Bug Fixes
+
+* packaging for workflow ([d038437](https://github.com/cthulhu-rlyeh/wabbajack/commit/d038437635a54ae2ad4d6b7f5ccd965c84d17299))
+
 ## [1.0.1](https://github.com/cthulhu-rlyeh/wabbajack/compare/v1.0.0...v1.0.1) (2022-12-23)
 
 
