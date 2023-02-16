@@ -52,11 +52,20 @@
 
 ### Changelog
 
-#### Version - 3.0.5.0 - ??
+#### Version - 3.0.6.2 - 1/28/2023
+* Add fallback for DDS compression when installing older lists. This should keep older DDS files from not being compressed without any mipmaps at all.
+* 
+
+#### Version - 3.0.6.1 - 1/28/2023
+* Game support:
+  * Added Mount & Blade II: Bennerlord support (Steam,GOG)
+* Fixed BA2 files not being compressed properly due to MipMaps not being detected properly
+
+#### Version - 3.0.6.0 - 1/21/2023
 * Add support for Cubemaps in BA2 files, if you have problems with BA2 recompression, be sure to delete your `GlobalVFSCache3.sqlite` from your AppData before the next compile
 * Fixed slides not being shown during installation for lists compile with the 3.0 compiler
 * Set the "While loading slide" debug message to be `Trace` level, set the default minimum log level to `Information`
-
+* Switched back to using TexConv for texture converting on Windows, should greatly improve compatibility  of texture conversion (on windows systems)
 
 #### Version - 3.0.5.0 - 12/22/2022
 * Add support for https://www.nexusmods.com/site hosted mods.

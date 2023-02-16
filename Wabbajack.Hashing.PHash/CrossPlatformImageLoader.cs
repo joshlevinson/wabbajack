@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using BCnEncoder.Decoder;
@@ -13,21 +14,22 @@ using Shipwreck.Phash.Imaging;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
+using Wabbajack.Common;
 using Wabbajack.DTOs.Texture;
 using Wabbajack.Paths;
 using Wabbajack.Paths.IO;
 
 namespace Wabbajack.Hashing.PHash;
 
-public class ImageLoader
+public class CrossPlatformImageLoader : IImageLoader
 {
-    public static async ValueTask<ImageState> Load(AbsolutePath path)
+    public async ValueTask<ImageState> Load(AbsolutePath path)
     {
         await using var fs = path.Open(FileMode.Open, FileAccess.Read, FileShare.Read);
         return await Load(fs);
     }
 
-    public static async ValueTask<ImageState> Load(Stream stream)
+    public async ValueTask<ImageState> Load(Stream stream)
     {
         var decoder = new BcDecoder();
         var ddsFile = DdsFile.Load(stream);
@@ -41,6 +43,7 @@ public class ImageLoader
         {
             Width = data.Width,
             Height = data.Height,
+            MipLevels = (int)ddsFile.header.dwMipMapCount,
             Format = (DXGI_FORMAT) format
         };
 
@@ -57,34 +60,33 @@ public class ImageLoader
             new Digest {Coefficients = a.Data},
             new Digest {Coefficients = b.Data});
     }
-
-    public static async Task Recompress(AbsolutePath input, int width, int height, DXGI_FORMAT format,
+    
+    public async Task Recompress(AbsolutePath input, int width, int height, int mipMaps, DXGI_FORMAT format,
         AbsolutePath output,
         CancellationToken token)
     {
         var inData = await input.ReadAllBytesAsync(token);
         await using var outStream = output.Open(FileMode.Create, FileAccess.Write);
-        await Recompress(new MemoryStream(inData), width, height, format, outStream, token);
+        await Recompress(new MemoryStream(inData), width, height, mipMaps, format, outStream, token);
     }
 
-    public static async Task Recompress(Stream input, int width, int height, DXGI_FORMAT format, Stream output,
+    public async Task Recompress(Stream input, int width, int height, int mipMaps, DXGI_FORMAT format, Stream output,
         CancellationToken token, bool leaveOpen = false)
     {
         var decoder = new BcDecoder();
         var ddsFile = DdsFile.Load(input);
-        
+
         if (!leaveOpen) await input.DisposeAsync();
 
         var faces = new List<Image<Rgba32>>();
-        
+
         var origFormat = ddsFile.dx10Header.dxgiFormat == DxgiFormat.DxgiFormatUnknown
             ? ddsFile.header.ddsPixelFormat.DxgiFormat
             : ddsFile.dx10Header.dxgiFormat;
 
         foreach (var face in ddsFile.Faces)
         {
-
-            var data = await decoder.DecodeRawToImageRgba32Async(face.MipMaps[0].Data, 
+            var data = await decoder.DecodeRawToImageRgba32Async(face.MipMaps[0].Data,
                 (int)face.Width, (int)face.Height, ToCompressionFormat((DXGI_FORMAT)origFormat), token);
 
             data.Mutate(x => x.Resize(width, height, KnownResamplers.Welch));
@@ -98,10 +100,11 @@ public class ImageLoader
                 Quality = CompressionQuality.Balanced,
                 GenerateMipMaps = true,
                 Format = ToCompressionFormat(format),
-                FileFormat = OutputFileFormat.Dds
+                FileFormat = OutputFileFormat.Dds,
+                MaxMipMapLevel = mipMaps != 0 ? mipMaps : -1
             }
         };
-        
+
         switch (faces.Count)
         {
             case 1:
@@ -114,11 +117,11 @@ public class ImageLoader
             default:
                 throw new NotImplementedException($"Can't encode dds with {faces.Count} faces");
         }
-        
+
         if (!leaveOpen)
             await output.DisposeAsync();
     }
-
+    
     public static CompressionFormat ToCompressionFormat(DXGI_FORMAT dx)
     {
         return dx switch

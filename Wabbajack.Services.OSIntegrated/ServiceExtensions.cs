@@ -15,6 +15,7 @@ using Wabbajack.DTOs;
 using Wabbajack.DTOs.Interventions;
 using Wabbajack.DTOs.JsonConverters;
 using Wabbajack.DTOs.Logins;
+using Wabbajack.Hashing.PHash;
 using Wabbajack.Installer;
 using Wabbajack.Networking.BethesdaNet;
 using Wabbajack.Networking.Discord;
@@ -63,7 +64,7 @@ public static class ServiceExtensions
         {
             var diskCache = options.UseLocalCache
                 ? new VFSDiskCache(s.GetService<TemporaryFileManager>()!.CreateFile().Path)
-                : new VFSDiskCache(KnownFolders.WabbajackAppLocal.Combine("GlobalVFSCache3.sqlite"));
+                : new VFSDiskCache(KnownFolders.WabbajackAppLocal.Combine("GlobalVFSCache4.sqlite"));
             var cesiCache = new CesiVFSCache(s.GetRequiredService<ILogger<CesiVFSCache>>(),
                 s.GetRequiredService<Client>());
             return new FallthroughVFSCache(new IVfsCache[] {diskCache});
@@ -180,6 +181,12 @@ public static class ServiceExtensions
             service.AddAllSingleton<IGameLocator, StubbedGameLocator>();
         else
             service.AddAllSingleton<IGameLocator, GameLocator>();
+        
+        // ImageLoader
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            service.AddSingleton<IImageLoader, TexConvImageLoader>();
+        else 
+            service.AddSingleton<IImageLoader, CrossPlatformImageLoader>();
 
         // Installer/Compiler Configuration
         service.AddScoped<InstallerConfiguration>();

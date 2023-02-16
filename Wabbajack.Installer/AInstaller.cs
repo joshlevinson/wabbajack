@@ -75,7 +75,8 @@ public abstract class AInstaller<T>
         DownloadDispatcher downloadDispatcher,
         ParallelOptions parallelOptions,
         IResource<IInstaller> limiter,
-        Client wjClient)
+        Client wjClient,
+        IImageLoader imageLoader)
     {
         _limiter = limiter;
         _manager = new TemporaryFileManager(config.Install.Combine("__temp__"));
@@ -90,7 +91,10 @@ public abstract class AInstaller<T>
         _parallelOptions = parallelOptions;
         _gameLocator = gameLocator;
         _wjClient = wjClient;
+        ImageLoader = imageLoader;
     }
+
+    public IImageLoader ImageLoader { get; }
 
     protected long MaxSteps { get; set; }
 
@@ -257,7 +261,7 @@ public abstract class AInstaller<T>
                         await using var s = await sf.GetStream();
                         await using var of = destPath.Open(FileMode.Create, FileAccess.Write);
                         _logger.LogInformation("Recompressing {Filename}", tt.To.FileName);
-                        await ImageLoader.Recompress(s, tt.ImageState.Width, tt.ImageState.Height, tt.ImageState.Format,
+                        await ImageLoader.Recompress(s, tt.ImageState.Width, tt.ImageState.Height, tt.ImageState.MipLevels, tt.ImageState.Format,
                             of, token);
                     }
                         break;
