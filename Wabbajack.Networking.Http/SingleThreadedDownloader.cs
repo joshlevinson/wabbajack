@@ -29,31 +29,49 @@ public class SingleThreadedDownloader : IHttpDownloader
     public async Task<Hash> Download(HttpRequestMessage message, AbsolutePath outputPath, IJob job,
         CancellationToken token)
     {
-        using var response = await _client.SendAsync(message, HttpCompletionOption.ResponseHeadersRead, token);
-        if (!response.IsSuccessStatusCode)
-            throw new HttpException(response);
-        
-        if (job.Size == 0)
-            job.Size = response.Content.Headers.ContentLength ?? 0;
-
-        /* Need to make this mulitthreaded to be much use
-        if ((response.Content.Headers.ContentLength ?? 0) != 0 &&
-            response.Headers.AcceptRanges.FirstOrDefault() == "bytes")
+        Exception downloadError = null!;
+        var downloader = new ResumableDownloader(message, outputPath, job, _logger);
+        for (var i = 0; i < 3; i++)
         {
-            return await ResettingDownloader(response, message, outputPath, job, token);
+            try
+            {
+                return await downloader.Download(token);
+            }
+            catch (Exception ex)
+            {
+                downloadError = ex;
+                _logger.LogDebug("Download for '{name}' failed. Retrying...", outputPath.FileName.ToString());
+            }
         }
-        */
 
-        await using var stream = await response.Content.ReadAsStreamAsync(token);
-        await using var outputStream = outputPath.Open(FileMode.Create, FileAccess.Write);
-        return await stream.HashingCopy(outputStream, token, job);
+        _logger.LogError(downloadError, "Failed to download '{name}' after 3 tries.", outputPath.FileName.ToString());
+        return new Hash();
+
+        // using var response = await _client.SendAsync(message, HttpCompletionOption.ResponseHeadersRead, token);
+        // if (!response.IsSuccessStatusCode)
+        //     throw new HttpException(response);
+        //
+        // if (job.Size == 0)
+        //     job.Size = response.Content.Headers.ContentLength ?? 0;
+        //
+        // /* Need to make this mulitthreaded to be much use
+        // if ((response.Content.Headers.ContentLength ?? 0) != 0 &&
+        //     response.Headers.AcceptRanges.FirstOrDefault() == "bytes")
+        // {
+        //     return await ResettingDownloader(response, message, outputPath, job, token);
+        // }
+        // */
+        //
+        // await using var stream = await response.Content.ReadAsStreamAsync(token);
+        // await using var outputStream = outputPath.Open(FileMode.Create, FileAccess.Write);
+        // return await stream.HashingCopy(outputStream, token, job);
     }
 
-    private const int CHUNK_SIZE = 1024 * 1024 * 8; 
+    private const int CHUNK_SIZE = 1024 * 1024 * 8;
 
     private async Task<Hash> ResettingDownloader(HttpResponseMessage response, HttpRequestMessage message, AbsolutePath outputPath, IJob job, CancellationToken token)
     {
-        
+
         using var rented = MemoryPool<byte>.Shared.Rent(CHUNK_SIZE);
         var buffer = rented.Memory;
 
@@ -65,7 +83,7 @@ public class SingleThreadedDownloader : IHttpDownloader
         var inputStream = await response.Content.ReadAsStreamAsync(token);
         await using var outputStream = outputPath.Open(FileMode.Create, FileAccess.Write, FileShare.None);
         long writePosition = 0;
-        
+
         while (running && !token.IsCancellationRequested)
         {
             var totalRead = 0;
@@ -112,7 +130,7 @@ public class SingleThreadedDownloader : IHttpDownloader
 
             {
                 writePosition += totalRead;
-                if (job != null) 
+                if (job != null)
                     await job.Report(totalRead, token);
                 message = CloneMessage(message);
                 message.Headers.Range = new RangeHeaderValue(writePosition, writePosition + CHUNK_SIZE);

@@ -228,7 +228,7 @@ public abstract class AInstaller<T>
             .ToDictionary(a => a.Key);
 
         if (grouped.Count == 0) return;
-
+        if (token.IsCancellationRequested) return;
 
         await _vfs.Extract(grouped.Keys.ToHashSet(), async (vf, sf) =>
         {
@@ -237,6 +237,7 @@ public abstract class AInstaller<T>
                 token);
             foreach (var directive in directives)
             {
+                if (token.IsCancellationRequested) return;
                 var file = directive.Directive;
                 UpdateProgress(file.Size);
                 var destPath = file.To.RelativeTo(_configuration.Install);
@@ -363,9 +364,10 @@ public abstract class AInstaller<T>
             {
                 _logger.LogInformation("Downloading {Archive}", archive.Name);
                 var outputPath = _configuration.Downloads.Combine(archive.Name);
+                var downloadPackagePath = outputPath.WithExtension(Ext.DownloadPackage);
 
                 if (download)
-                    if (outputPath.FileExists())
+                    if (outputPath.FileExists() && !downloadPackagePath.FileExists())
                     {
                         var origName = Path.GetFileNameWithoutExtension(archive.Name);
                         var ext = Path.GetExtension(archive.Name);
@@ -396,6 +398,10 @@ public abstract class AInstaller<T>
 
             var (result, hash) =
                 await _downloadDispatcher.DownloadWithPossibleUpgrade(archive, destination.Value, token);
+            if (token.IsCancellationRequested)
+            {
+                return false;
+            }
 
             if (hash != archive.Hash)
             {
@@ -416,10 +422,17 @@ public abstract class AInstaller<T>
                 await destination.Value.MoveToAsync(destination.Value.Parent.Combine(archive.Hash.ToHex()), true,
                     token);
         }
+        catch (OperationCanceledException) when (token.IsCancellationRequested)
+        {
+            // No actual error. User canceled downloads.
+        }
+        catch (NotImplementedException) when (archive.State is GameFileSource)
+        {
+            _logger.LogError("Missing game file {name}. This could be caused by missing DLC or a modified installation.", archive.Name);
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Download error for file {name}", archive.Name);
-            return false;
         }
 
         return false;
