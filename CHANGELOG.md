@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.8](https://github.com/cthulhu-rlyeh/wabbajack/compare/v1.0.7...v1.0.8) (2023-07-06)
+
+
+### Bug Fixes
+
+* recompile ([3cadcda](https://github.com/cthulhu-rlyeh/wabbajack/commit/3cadcda564f1bb3f7375754634f4dec91df5523c))
+
 ## [1.0.7](https://github.com/cthulhu-rlyeh/wabbajack/compare/v1.0.6...v1.0.7) (2023-03-07)
 
 
