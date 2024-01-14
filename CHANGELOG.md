@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.13](https://github.com/cthulhu-rlyeh/wabbajack/compare/v1.0.12...v1.0.13) (2024-01-14)
+
+
+### Bug Fixes
+
+* App.xaml.cs falsify admin check ([da46fdf](https://github.com/cthulhu-rlyeh/wabbajack/commit/da46fdf45943288700343bc12bdcd7e363a7ada4))
+
 ## [1.0.12](https://github.com/cthulhu-rlyeh/wabbajack/compare/v1.0.11...v1.0.12) (2024-01-14)
 
 
