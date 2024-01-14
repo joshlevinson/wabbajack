@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.12](https://github.com/cthulhu-rlyeh/wabbajack/compare/v1.0.11...v1.0.12) (2024-01-14)
+
+
+### Bug Fixes
+
+* arch name fix for .net 8 ([198d855](https://github.com/cthulhu-rlyeh/wabbajack/commit/198d85577b128ec73fcde18f7b6cc81116c41c9f))
+
 ## [1.0.11](https://github.com/cthulhu-rlyeh/wabbajack/compare/v1.0.10...v1.0.11) (2024-01-14)
 
 
