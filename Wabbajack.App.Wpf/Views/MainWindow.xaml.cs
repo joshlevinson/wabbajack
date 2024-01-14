@@ -1,26 +1,18 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Linq;
+using System.IO;
 using System.Reactive.Linq;
-using System.Threading;
 using System.Windows;
 using System.Windows.Input;
-using DynamicData;
 using DynamicData.Binding;
 using MahApps.Metro.Controls;
 using Microsoft.Extensions.Logging;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
 using Wabbajack.Common;
-using Wabbajack.DTOs;
-using Wabbajack.DTOs.DownloadStates;
-using Wabbajack.DTOs.Interventions;
 using Wabbajack.Messages;
 using Wabbajack.Paths.IO;
-using Wabbajack.UserIntervention;
 using Wabbajack.Util;
-using Wabbajack.Views;
 
 namespace Wabbajack
 {
@@ -30,7 +22,6 @@ namespace Wabbajack
     public partial class MainWindow : MetroWindow
     {
         private MainWindowVM _mwvm;
-        private MainSettings _settings;
         private readonly ILogger<MainWindow> _logger;
         private readonly SystemParametersConstructor _systemParams;
 
@@ -55,7 +46,33 @@ namespace Wabbajack
 
                 Closed += (s, e) =>
                 {
+                    _logger.LogInformation("Beginning shutdown...");
                     _mwvm.CancelRunningTasks(TimeSpan.FromSeconds(10));
+                    
+                    // Cleaning the temp folder when the app closes since it can take up multiple Gigabytes of Storage
+                    var tempDirectory = Environment.CurrentDirectory + "\\temp";
+                    _logger.LogInformation("Clearing {TempDir}",tempDirectory);
+                    try
+                    {
+                        var directoryInfo = new DirectoryInfo(tempDirectory);
+                        
+                        foreach (var file in directoryInfo.EnumerateFiles())
+                        {
+                            file.Delete(); 
+                        }
+                        foreach (var dir in directoryInfo.EnumerateDirectories())
+                        {
+                            dir.Delete(true); 
+                        }
+                        
+                        _logger.LogInformation("Finished clearing {TempDir}",tempDirectory);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex,"Failed clearing {TempDir}",tempDirectory);
+                    }
+                    
+                    
                     Application.Current.Shutdown();
                 };
 
@@ -75,7 +92,7 @@ namespace Wabbajack
                 var p = _systemParams.Create();
 
                 _logger.LogInformation("Detected Windows Version: {Version}", Environment.OSVersion.VersionString);
-                
+
                 _logger.LogInformation(
                     "System settings - ({MemorySize} RAM) ({PageSize} Page), Display: {ScreenWidth} x {ScreenHeight} ({Vram} VRAM - VideoMemorySizeMb={ENBVRam})",
                     p.SystemMemorySize.ToFileSizeString(), p.SystemPageSize.ToFileSizeString(), p.ScreenWidth, p.ScreenHeight, p.VideoMemorySize.ToFileSizeString(), p.EnbLEVRAMSize);
@@ -85,24 +102,7 @@ namespace Wabbajack
                 else if (p.SystemPageSize < 2e+10)
                     _logger.LogInformation("Pagefile below recommended! Consider increasing to 20000MB. A suboptimal pagefile can cause crashes and poor in-game performance");
 
-                //Warmup();
-                
                 var _ = updater.Run();
-
-                var (settings, loadedSettings) = MainSettings.TryLoadTypicalSettings().AsTask().Result;
-                // Load settings
-                /*
-                if (CLIArguments.NoSettings || !loadedSettings)
-                {
-                    _settings = new MainSettings {Version = Consts.SettingsVersion};
-                    RunWhenLoaded(DefaultSettings);
-                }
-                else
-                {
-                    _settings = settings;
-                    RunWhenLoaded(LoadSettings);
-                }*/
-                
 
                 // Bring window to the front if it isn't already
                 this.Initialized += (s, e) =>
@@ -135,45 +135,7 @@ namespace Wabbajack
                 .BindToStrict(this, view => view.ResourceUsage.Text);
             vm.WhenAnyValue(vm => vm.AppName)
                 .BindToStrict(this, view => view.AppName.Text);
-            
-        }
 
-        public void Init(MainWindowVM vm, MainSettings settings)
-        {
-            DataContext = vm;
-            _mwvm = vm;
-            _settings = settings;
-        }
-
-        private void RunWhenLoaded(Action a)
-        {
-            if (IsLoaded)
-            {
-                a();
-            }
-            else
-            {
-                this.Loaded += (sender, e) =>
-                {
-                    a();
-                };
-            }
-        }
-
-        private void LoadSettings()
-        {
-            Width = _settings.Width;
-            Height = _settings.Height;
-            Left = _settings.PosX;
-            Top = _settings.PosY;
-        }
-
-        private void DefaultSettings()
-        {
-            Width = 1300;
-            Height = 960;
-            Left = 15;
-            Top = 15;
         }
 
         private void Window_Closing(object sender, CancelEventArgs e)

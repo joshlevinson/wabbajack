@@ -80,22 +80,57 @@
 
 ### Changelog
 
+#### Version - 3.4.1.0 - 12/21/2023
+* Added Support for Final Fantasy 7: Remake Intergrade
+* Update CLI to .NET 8.0 (was missed in the last update)
+* Added Support for Baldur's Gate 3 
+  * Very Work in Progress
+  * **NOT** Plug and Play for compiling and installing!
+
+#### Version - 3.4.0.0 - 11/19/2023
+* Fixed `--outputPath` not being used for the CLI `compile` (thanks to @majcosta for fixing that)
+* Improved Log message for cases where low storage on the drive Wabbajack is installed on causes compiles to fail
+  * **To list authors still compiling on Wabbajack 3.0.5.0:**  
+    This is what is causing your compiles with any newer Wabbajack version to fail.
+    The reason the compile works is that you already have a full cache for all your mods and BSAs with that version and WJ only needs to add a small amount of new files to that cache and needs less temporary drive space because of that. Any version higher than 3.0.5.0 needs a new cache that can't be converted and needs WJ to unpack every Archive (zip/rar/7z/BSA/BA2) and add the files inside to the new cache.  
+    Finding ways to reduce the storage footprint when compiling huge lists for the first time (since any following compiles won't need that space requirement anymore) will be investigated.
+* Wabbajack will now clean the `temp` folder when closed
+* Updated Dependencies
+  * LZ4 to version 1.3.7-beta
+  * SharpZipLib to version 1.4.2
+* Fully upgraded to .NET 8.0
+* Fixed the WebView2 based browser window to no longer crash the application when closed
+
+#### Version - 3.3.0.1 - (Was only a Pre-Release)
+* Fixed Manual Downloading on NexusMods being blocked by a hidden cookie consent banner
+
+#### Version - 3.3.0.0 - 10/13/2023 (taken down due to build issues)
+* Fixed some UI issues arising from 3.2.0.0 changes - more informative error text, wiki link button
+* Added optional JSON flag for `DisplayVersionOnlyInInstallerView` to enable the installer image to only show version number.
+* Fixed manual downloader downloading in the OS's "Downloads" folder
+* Added RAM Limit setting for downloads
+  * This fixes the High RAM usage (and sometimes app crashes) on some Hardware + Very High Speed Internet Connection Systems
+* Added Fallout 4 (GOG) to the index
+* Updated App to .NET 8.0
+  * Should fix random crashes on some systems
+* Updated GameFinder to 4.0.0
+
 #### Version - 3.2.0.1 - 7/23/2023
   * Code cleanup: re-added some network and diagnostic code missing since 2.5
 
 #### Version - 3.2.0.0 - 7/16/2023
-  * Fixed issues related to high RAM usage
-  * The resumable downloads now reserve drive space to write to in advance instead of being managed in system RAM
-  * remove LoversLab from the "Logins" Setting because it is deprecated for ages now and only causes confusion,
-    just for the unlikely probability that LL will fix their proper API.
-  * Added safety to install path selection, to ensure that no files are deleted that are not intended to be.
-  * Fixed allowing back button during install which can result in multiple install processes
-  * fixed search filter not applying when pressing back button and reaccessing gallery
-  * Added more robust checking for protected location paths and subfolders for the launcher exe and install and download paths
-  * Fixed readme double opening when modlist details are prepoulated
-  * Added a check if Downloadpath is alongside Wabbajack.exe location, to match the install path check that already exists
-  * Added check for identical download and install paths
-  * Fixed No Delete and NoDelete being handled by stripping whitespace before the regex, to idiotproof things a bit
+* Fixed issues related to high RAM usage
+* The resumable downloads now reserve drive space to write to in advance instead of being managed in system RAM
+* remove LoversLab from the "Logins" Setting because it is deprecated for ages now and only causes confusion,
+  just for the unlikely probability that LL will fix their proper API.
+* Added safety to install path selection, to ensure that no files are deleted that are not intended to be.
+* Fixed allowing back button during install which can result in multiple install processes
+* fixed search filter not applying when pressing back button and reaccessing gallery
+* Added more robust checking for protected location paths and subfolders for the launcher exe and install and download paths
+* Fixed readme double opening when modlist details are prepoulated
+* Added a check if Downloadpath is alongside Wabbajack.exe location, to match the install path check that already exists
+* Added check for identical download and install paths
+* Fixed No Delete and NoDelete being handled by stripping whitespace before the regex, to idiotproof things a bit
 
 #### Version - 3.1.0.0 - 5/7/2023
 * Fixed Readme opening twice

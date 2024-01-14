@@ -23,7 +23,7 @@ public abstract class BrowserWindowViewModel : ViewModel
     [Reactive] public string HeaderText { get; set; }
 
     [Reactive] public string Instructions { get; set; }
-    
+
     [Reactive] public string Address { get; set; }
 
     public BrowserWindow? Browser { get; set; }
@@ -83,6 +83,11 @@ public abstract class BrowserWindowViewModel : ViewModel
 
     public async Task<Cookie[]> GetCookies(string domainEnding, CancellationToken token)
     {
+        // Strip www. before searching for cookies on a domain to handle websites saving their cookies like .example.org
+        if (domainEnding.StartsWith("www."))
+        {
+            domainEnding = domainEnding[4..];
+        }
         var cookies = (await _browser.CoreWebView2.CookieManager.GetCookiesAsync(""))
             .Where(c => c.Domain.EndsWith(domainEnding));
         return cookies.Select(c => new Cookie
@@ -112,21 +117,30 @@ public abstract class BrowserWindowViewModel : ViewModel
     {
         var source = new TaskCompletionSource<Uri>();
         var referer = _browser.Source;
-        _browser.CoreWebView2.DownloadStarting += (sender, args) =>
+        while (_browser.CoreWebView2 == null)
+            await Task.Delay(10, token);
+
+        EventHandler<CoreWebView2DownloadStartingEventArgs> handler = null!;
+        
+        handler = (_, args) =>
         {
             try
             {
-                
                 source.SetResult(new Uri(args.DownloadOperation.Uri));
+                _browser.CoreWebView2.DownloadStarting -= handler;
             }
             catch (Exception)
             {
-                source.SetCanceled();
+                source.SetCanceled(token);
+                _browser.CoreWebView2.DownloadStarting -= handler;
             }
-            
+
             args.Cancel = true;
             args.Handled = true;
         };
+
+        _browser.CoreWebView2.DownloadStarting += handler;     
+            
         Uri uri;
 
         while (true)
@@ -144,12 +158,16 @@ public abstract class BrowserWindowViewModel : ViewModel
         }
 
         var cookies = await GetCookies(uri.Host, token);
-        return new ManualDownload.BrowserDownloadState(uri, cookies, new[]
-        {
-            ("Referer", referer.ToString())
-        });
+        return new ManualDownload.BrowserDownloadState(
+            uri,
+            cookies,
+            new[]
+            {
+                ("Referer", referer?.ToString() ?? uri.ToString())
+            },
+            _browser.CoreWebView2.Settings.UserAgent);
     }
-    
+
     public async Task<Hash> WaitForDownload(AbsolutePath path, CancellationToken token)
     {
         var source = new TaskCompletionSource();
@@ -173,7 +191,7 @@ public abstract class BrowserWindowViewModel : ViewModel
             catch (Exception)
             {
                 source.SetCanceled();
-            }
+            } 
         };
 
         await source.Task;

@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Downloader;
 using Microsoft.Extensions.Logging;
+using Wabbajack.Configuration;
 using Wabbajack.Hashing.xxHash64;
 using Wabbajack.Paths;
 using Wabbajack.Paths.IO;
@@ -20,17 +21,19 @@ internal class ResumableDownloader
     private readonly HttpRequestMessage _msg;
     private readonly AbsolutePath _outputPath;
     private readonly AbsolutePath _packagePath;
+    private readonly PerformanceSettings _performanceSettings;
     private readonly ILogger<SingleThreadedDownloader> _logger;
     private CancellationToken _token;
     private Exception? _error;
 
 
-    public ResumableDownloader(HttpRequestMessage msg, AbsolutePath outputPath, IJob job, ILogger<SingleThreadedDownloader> logger)
+    public ResumableDownloader(HttpRequestMessage msg, AbsolutePath outputPath, IJob job, PerformanceSettings performanceSettings, ILogger<SingleThreadedDownloader> logger)
     {
         _job = job;
         _msg = msg;
         _outputPath = outputPath;
         _packagePath = outputPath.WithExtension(Extension.FromPath(".download_package"));
+        _performanceSettings = performanceSettings;
         _logger = logger;
     }
 
@@ -99,8 +102,10 @@ internal class ResumableDownloader
 
     private DownloadConfiguration CreateConfiguration(HttpRequestMessage message)
     {
+        var maximumMemoryPerDownloadThreadMb = Math.Max(0, _performanceSettings.MaximumMemoryPerDownloadThreadMb);
         var configuration = new DownloadConfiguration
         {
+            MaximumMemoryBufferBytes = maximumMemoryPerDownloadThreadMb * 1024 * 1024,
             Timeout = (int)TimeSpan.FromSeconds(120).TotalMilliseconds,
             ReserveStorageSpaceBeforeStartingDownload = true,
             RequestConfiguration = new RequestConfiguration
@@ -161,8 +166,17 @@ internal class ResumableDownloader
             return null;
         }
 
-        var packageJson = _packagePath.ReadAllText();
-        return JsonSerializer.Deserialize<DownloadPackage>(packageJson);
+        try
+        {
+            var packageJson = _packagePath.ReadAllText();
+            return JsonSerializer.Deserialize<DownloadPackage>(packageJson);
+        }
+        catch (JsonException ex)
+        {
+            _logger.LogWarning(ex, "Package for '{name}' couldn't be parsed. Deleting package and starting from scratch...", _outputPath.FileName.ToString());
+            DeletePackage();
+            return null;
+        }
     }
 
     private void SavePackage(DownloadPackage package)
