@@ -31,9 +31,9 @@ jobs:
         run: |
           mkdir release
           dotnet restore
-          dotnet publish Wabbajack.App.Wpf\Wabbajack.App.Wpf.csproj --runtime win10-x64 --configuration Release /p:Platform=x64 -o .\release\app /p:PublishReadyToRun=true /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true --self-contained /p:DebugType=embedded
-          dotnet publish Wabbajack.Launcher\Wabbajack.Launcher.csproj --runtime win10-x64 --configuration Release /p:Platform=x64 -o .\release\launcher /p:PublishReadyToRun=true /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true --self-contained /p:DebugType=embedded
-          dotnet publish Wabbajack.CLI\Wabbajack.CLI.csproj --runtime win10-x64 --configuration Release /p:Platform=x64 -o .\release\app --self-contained /p:DebugType=embedded
+          dotnet publish Wabbajack.App.Wpf\Wabbajack.App.Wpf.csproj --runtime win-x64 --configuration Release /p:Platform=x64 -o .\release\app /p:PublishReadyToRun=true /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true --self-contained /p:DebugType=embedded
+          dotnet publish Wabbajack.Launcher\Wabbajack.Launcher.csproj --runtime win-x64 --configuration Release /p:Platform=x64 -o .\release\launcher /p:PublishReadyToRun=true /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true --self-contained /p:DebugType=embedded
+          dotnet publish Wabbajack.CLI\Wabbajack.CLI.csproj --runtime win-x64 --configuration Release /p:Platform=x64 -o .\release\app --self-contained /p:DebugType=embedded
       - name: Package
         run: |
           cd release
