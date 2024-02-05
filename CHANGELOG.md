@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.14](https://github.com/cthulhu-rlyeh/wabbajack/compare/v1.0.13...v1.0.14) (2024-02-05)
+
+
+### Bug Fixes
+
+* bump ([b1f3f6f](https://github.com/cthulhu-rlyeh/wabbajack/commit/b1f3f6f9d2b715a6577c0a1313665778adfd70c6))
+* skip compiling launcher, don't need it ([dc9744d](https://github.com/cthulhu-rlyeh/wabbajack/commit/dc9744dcfcc555a20cf1c282cef60cc6b5d52418))
+
 ## [1.0.13](https://github.com/cthulhu-rlyeh/wabbajack/compare/v1.0.12...v1.0.13) (2024-01-14)
 
 
