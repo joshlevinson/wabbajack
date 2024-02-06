@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.15](https://github.com/cthulhu-rlyeh/wabbajack/compare/v1.0.14...v1.0.15) (2024-02-06)
+
+
+### Bug Fixes
+
+* build params test ([a7dfacb](https://github.com/cthulhu-rlyeh/wabbajack/commit/a7dfacbc6f354244d2393496650ff4eb1f43eb1f))
+
 ## [1.0.14](https://github.com/cthulhu-rlyeh/wabbajack/compare/v1.0.13...v1.0.14) (2024-02-05)
 
 
