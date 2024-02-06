@@ -31,8 +31,7 @@ jobs:
         run: |
           mkdir release
           dotnet restore
-          dotnet publish Wabbajack.App.Wpf\Wabbajack.App.Wpf.csproj --runtime win-x64 --configuration Release /p:Platform=x64 -o .\release\app /p:PublishReadyToRun=true /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true --self-contained /p:DebugType=embedded
-          dotnet publish Wabbajack.CLI\Wabbajack.CLI.csproj --runtime win-x64 --configuration Release /p:Platform=x64 -o .\release\app --self-contained /p:DebugType=embedded
+          dotnet publish Wabbajack.App.Wpf\Wabbajack.App.Wpf.csproj --framework "net8.0-windows" --runtime win-x64 --configuration Release /p:Platform=x64 -o .\release /p:IncludeNativeLibrariesForSelfExtract=true --self-contained /p:DebugType=embedded
       - name: Package
         run: |
           cd release
