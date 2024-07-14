@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.16](https://github.com/cthulhu-rlyeh/wabbajack/compare/v1.0.15...v1.0.16) (2024-07-14)
+
+
+### Bug Fixes
+
+* bump for recompile ([c951a85](https://github.com/cthulhu-rlyeh/wabbajack/commit/c951a85d1c4566cdfab271bc9194def1479a0f33))
+
 ## [1.0.15](https://github.com/cthulhu-rlyeh/wabbajack/compare/v1.0.14...v1.0.15) (2024-02-06)
 
 
