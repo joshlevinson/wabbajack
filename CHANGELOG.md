@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.0 (2025-04-21)
+
+
+### Bug Fixes
+
+* bump recompile ([14c0524](https://github.com/joshlevinson/wabbajack/commit/14c0524ad7925e6ea2089a24b724a2b44c2e1acf))
+
 ## [1.0.16](https://github.com/cthulhu-rlyeh/wabbajack/compare/v1.0.15...v1.0.16) (2024-07-14)
 
 
